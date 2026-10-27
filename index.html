@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Game Interaktif: Pohon Kebaikan (Menyayangi Anak Yatim)</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Font Family Inter & Comic Font for playful tone -->
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    .font-fredoka {
+      font-family: 'Fredoka One', cursive;
+    }
+    .bg-pattern {
+      background-color: #f0fdf4;
+      background-image: radial-gradient(#bbf7d0 1.5px, transparent 1.5px);
+      background-size: 24px 24px;
+    }
+    .leaf-glow {
+      filter: drop-shadow(0 0 8px rgba(34, 197, 94, 0.6));
+    }
+    .trash-glow {
+      filter: drop-shadow(0 0 8px rgba(239, 68, 68, 0.6));
+    }
+    /* Smooth transitions & animations */
+    @keyframes floatCard {
+      0%, 100% { transform: translateY(0px) rotate(0deg); }
+      50% { transform: translateY(-6px) rotate(1deg); }
+    }
+    .animate-float {
+      animation: floatCard 3s ease-in-out infinite;
+    }
+    @keyframes popIn {
+      0% { transform: scale(0.6); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    .animate-pop {
+      animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    }
+    /* Custom scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1f1f1;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #86efac;
+      border-radius: 10px;
+    }
+  </style>
+</head>
+<body class="bg-pattern text-slate-800 min-h-screen flex flex-col justify-between overflow-x-hidden">
+
+  <!-- TOP HEADER -->
+  <header class="bg-emerald-600 text-white shadow-lg border-b-4 border-emerald-700 sticky top-0 z-30">
+    <div class="max-w-6xl mx-auto px-4 py-2 flex flex-wrap justify-between items-center gap-2">
+      <div class="flex items-center space-x-3">
+        <div class="bg-amber-400 text-emerald-950 p-2 rounded-2xl shadow-inner text-2xl font-black">
+          🌳
+        </div>
+        <div>
+          <h1 class="font-fredoka text-xl md:text-2xl text-amber-300 tracking-wide drop-shadow">
+            POHON KEBAIKAN
+          </h1>
+          <p class="text-xs md:text-sm text-emerald-100 font-semibold">
+            PAI Kelas 4 SD • Menyayangi Anak Yatim
+          </p>
+        </div>
+      </div>
+
+      <!-- Live Dashboard (Team, Score, Timer) -->
+      <div class="flex items-center space-x-3 text-sm md:text-base">
+        <div id="teamBadge" class="hidden sm:flex items-center bg-emerald-700/80 px-3 py-1.5 rounded-xl border border-emerald-400/30">
+          <span class="text-emerald-200 mr-1.5 font-medium">Kelompok:</span>
+          <span id="displayTeamName" class="font-bold text-amber-300">Tim Kasih</span>
+        </div>
+
+        <div class="bg-amber-500/90 text-white px-3 py-1.5 rounded-xl font-bold flex items-center space-x-1 shadow">
+          <span>⭐ Skor:</span>
+          <span id="scoreDisplay" class="font-fredoka text-xl text-white">0</span>
+        </div>
+
+        <div class="bg-emerald-800 text-emerald-100 px-3 py-1.5 rounded-xl font-mono font-bold flex items-center space-x-1 shadow">
+          <span>⏱️</span>
+          <span id="timerDisplay">02:00</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- START / SETUP SCREEN -->
+  <div id="startScreen" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-lg w-full p-6 md:p-8 shadow-2xl border-4 border-emerald-500 animate-pop text-center relative overflow-hidden">
+      <div class="absolute -top-12 -right-12 w-32 h-32 bg-amber-200 rounded-full opacity-50 blur-xl"></div>
+      
+      <div class="text-5xl mb-2">🌿</div>
+      <h2 class="font-fredoka text-2xl md:text-3xl text-emerald-700 mb-2">Pohon Kebaikan</h2>
+      <p class="text-sm text-slate-600 mb-6 font-medium">
+        Bantu tumbuhkan daun-daun kebaikan pada pohon dan buang sikap tercela ke tempat sampah!
+      </p>
+
+      <!-- Player Input Form -->
+      <div class="bg-emerald-50 p-4 rounded-2xl mb-6 text-left border border-emerald-200">
+        <label class="block text-xs font-bold text-emerald-800 uppercase tracking-wider mb-2">
+          Pilih Nama Kelompok / Pemain:
+        </label>
+        <div class="grid grid-cols-3 gap-2 mb-3">
+          <button type="button" onclick="selectPresetTeam('Tim Kasih')" class="team-btn py-2 px-1 text-xs md:text-sm font-bold bg-white border-2 border-emerald-400 text-emerald-700 rounded-xl hover:bg-emerald-500 hover:text-white transition">
+            🌸 Tim Kasih
+          </button>
+          <button type="button" onclick="selectPresetTeam('Tim Amanah')" class="team-btn py-2 px-1 text-xs md:text-sm font-bold bg-white border-2 border-emerald-400 text-emerald-700 rounded-xl hover:bg-emerald-500 hover:text-white transition">
+            ⭐ Tim Amanah
+          </button>
+          <button type="button" onclick="selectPresetTeam('Tim Empati')" class="team-btn py-2 px-1 text-xs md:text-sm font-bold bg-white border-2 border-emerald-400 text-emerald-700 rounded-xl hover:bg-emerald-500 hover:text-white transition">
+            💙 Tim Empati
+          </button>
+        </div>
+        <input type="text" id="inputTeamName" placeholder="Atau ketik nama sendiri / kelompok..." class="w-full px-3 py-2 rounded-xl border-2 border-emerald-300 focus:border-emerald-600 focus:outline-none text-sm font-semibold">
+      </div>
+
+      <!-- Instructions Box -->
+      <div class="text-left text-xs bg-amber-50 p-3 rounded-xl border border-amber-200 mb-6 text-amber-900 leading-relaxed">
+        <p class="font-bold mb-1">📜 Aturan Ringkas:</p>
+        <ul class="list-disc list-inside space-y-1">
+          <li><strong>Daun Kebaikan</strong> (Menyayangi anak yatim) ➔ Tempelkan pada <strong>Pohon</strong>.</li>
+          <li><strong>Sikap Buruk / Menghardik</strong> ➔ Buang ke <strong>Tong Sampah</strong>.</li>
+          <li>Bisa gunakan cara <strong>Tarik (Drag)</strong> atau <strong>Klik Tombol Pilih</strong>.</li>
+        </ul>
+      </div>
+
+      <button onclick="startGame()" class="w-full py-3.5 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-fredoka text-xl rounded-2xl shadow-lg transform active:scale-95 transition">
+        🚀 MULAI PERMAINAN
+      </button>
+    </div>
+  </div>
+
+  <!-- MAIN GAME AREA -->
+  <main class="max-w-6xl mx-auto w-full px-4 py-4 flex-1 flex flex-col justify-between">
+    
+    <!-- Top Interactive Stage (Tree + Trash Bin) -->
+    <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-stretch mb-4">
+      
+      <!-- Interactive Tree Section (Left/Center 8 Cols) -->
+      <div id="treeDropZone" class="md:col-span-8 bg-gradient-to-b from-sky-100 to-emerald-100 border-4 border-emerald-400 rounded-3xl p-4 relative min-h-[340px] md:min-h-[420px] flex flex-col justify-between overflow-hidden shadow-inner transition-all duration-300">
+        
+        <!-- Background Sun & Clouds Decoration -->
+        <div class="absolute top-4 left-4 text-amber-400 text-4xl animate-pulse">☀️</div>
+        <div class="absolute top-6 right-10 text-white/80 text-3xl">☁️</div>
+        <div class="absolute top-12 left-1/3 text-white/60 text-2xl">☁️</div>
+
+        <!-- Tree Header Badge -->
+        <div class="relative z-10 flex justify-between items-center bg-white/80 backdrop-blur px-3 py-1.5 rounded-xl border border-emerald-200 w-max shadow-sm">
+          <span class="font-fredoka text-emerald-800 text-sm md:text-base">🌳 Pohon Kebaikan</span>
+          <span id="leafCounter" class="ml-2 text-xs bg-emerald-600 text-white px-2 py-0.5 rounded-full font-bold">0/10 Daun</span>
+        </div>
+
+        <!-- Visual Tree Canvas SVG & Leaves Area -->
+        <div class="relative w-full flex-1 flex items-end justify-center my-2">
+          
+          <!-- Tree SVG Graphic -->
+          <svg viewBox="0 0 400 320" class="w-full max-w-[420px] h-auto drop-shadow-md">
+            <!-- Foliage / Canopy (Background circles) -->
+            <path d="M 200,40 C 130,40 80,90 80,160 C 80,180 90,200 100,210 C 70,220 60,250 80,270 C 100,290 140,280 160,270 C 180,290 220,290 240,270 C 260,280 300,290 320,270 C 340,250 330,220 300,210 C 310,200 320,180 320,160 C 320,90 270,40 200,40 Z" fill="#22c55e" />
+            <path d="M 200,55 C 145,55 100,95 100,155 C 100,180 120,210 140,220 C 160,230 240,230 260,220 C 280,210 300,180 300,155 C 300,95 255,55 200,55 Z" fill="#4ade80" opacity="0.6"/>
+            <!-- Trunk -->
+            <path d="M 175,210 C 175,210 165,260 150,310 L 250,310 C 235,260 225,210 225,210 Z" fill="#854d0e" />
+            <!-- Branch details -->
+            <path d="M 185,230 Q 150,210 130,200" stroke="#713f12" stroke-width="8" stroke-linecap="round" fill="none" />
+            <path d="M 215,230 Q 250,210 270,195" stroke="#713f12" stroke-width="8" stroke-linecap="round" fill="none" />
+            <path d="M 200,200 Q 180,160 170,140" stroke="#713f12" stroke-width="6" stroke-linecap="round" fill="none" />
+            <path d="M 200,190 Q 220,160 235,145" stroke="#713f12" stroke-width="6" stroke-linecap="round" fill="none" />
+          </svg>
+
+          <!-- Attached Good Leaves Container (Overlay over SVG) -->
+          <div id="attachedLeavesContainer" class="absolute inset-0 max-w-[420px] mx-auto pointer-events-none">
+            <!-- Dynamic leaves will be injected here -->
+          </div>
+        </div>
+
+        <!-- Dropzone Hint Footer -->
+        <div class="text-center text-xs font-bold text-emerald-700 bg-white/60 backdrop-blur py-1.5 px-3 rounded-xl border border-emerald-200">
+          📍 Tarik atau Klik <span class="text-emerald-900 underline">"Tempel di Pohon"</span> untuk Perbuatan Baik
+        </div>
+      </div>
+
+      <!-- Trash Can Section (Right 4 Cols) -->
+      <div id="trashDropZone" class="md:col-span-4 bg-gradient-to-b from-rose-50 to-red-100 border-4 border-rose-300 rounded-3xl p-4 flex flex-col justify-between items-center text-center shadow-inner relative overflow-hidden transition-all duration-300">
+        
+        <!-- Trash Header -->
+        <div class="bg-white/80 backdrop-blur px-3 py-1.5 rounded-xl border border-rose-200 w-full shadow-sm">
+          <span class="font-fredoka text-rose-800 text-sm md:text-base">🗑️ Tong Sampah Perbuatan Buruk</span>
+        </div>
+
+        <!-- Big Interactive Trash Can Graphic -->
+        <div class="my-auto py-4 flex flex-col items-center justify-center">
+          <div id="trashCanIcon" class="text-7xl md:text-8xl transition-transform duration-300 hover:scale-110 drop-shadow-md">
+            🗑️
+          </div>
+          <p class="text-xs font-bold text-rose-700 mt-2 max-w-[180px]">
+            Tempat membuang sikap tercela & menghardik anak yatim!
+          </p>
+        </div>
+
+        <!-- Dropzone Hint Footer -->
+        <div class="w-full text-center text-xs font-bold text-rose-700 bg-white/60 backdrop-blur py-1.5 px-3 rounded-xl border border-rose-200">
+          📍 Tarik atau Klik <span class="text-rose-900 underline">"Buang Sampah"</span> untuk Sikap Tercela
+        </div>
+      </div>
+
+    </div>
+
+    <!-- BOTTOM ACTION CARD DISPLAY & DECISION CONTROLS -->
+    <div class="bg-white rounded-3xl p-4 md:p-5 shadow-xl border-2 border-emerald-200 relative">
+      <div class="flex justify-between items-center mb-3">
+        <span class="text-xs font-extrabold uppercase tracking-wider text-slate-500 flex items-center">
+          <span class="inline-block w-2.5 h-2.5 rounded-full bg-emerald-500 mr-2 animate-ping"></span>
+          Kartu Perbuatan (Sisa: <span id="cardsLeftCount" class="text-emerald-700 ml-1">12</span>)
+        </span>
+        <span class="text-xs text-slate-400 font-semibold hidden sm:inline">Pilih tindakan yang tepat untuk kartu di bawah!</span>
+      </div>
+
+      <!-- Active Floating Card Area -->
+      <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+        
+        <!-- Card Item -->
+        <div class="w-full md:w-2/3 flex justify-center">
+          <div id="activeCard" 
+               draggable="true" 
+               class="w-full max-w-md bg-gradient-to-r from-amber-50 to-orange-50 border-3 border-amber-300 rounded-2xl p-4 md:p-5 shadow-md hover:shadow-lg transition cursor-grab active:cursor-grabbing text-center animate-float relative group">
+            
+            <div class="absolute -top-3 left-4 bg-amber-400 text-emerald-950 font-bold text-[10px] uppercase px-2 py-0.5 rounded-md shadow-sm">
+              Tarik atau Klik Tombol
+            </div>
+
+            <p id="cardText" class="font-bold text-base md:text-lg text-slate-800 my-1 leading-snug">
+              Memuat kartu perbuatan...
+            </p>
+
+            <p class="text-[11px] text-slate-400 italic">
+              💡 Apakah ini sikap menyayangi atau menghardik anak yatim?
+            </p>
+          </div>
+        </div>
+
+        <!-- Quick Action Buttons for Touch / Mobile users -->
+        <div class="w-full md:w-1/3 flex flex-row md:flex-col gap-2.5">
+          <button onclick="handleDecision('TREE')" 
+                  class="flex-1 py-3 px-4 bg-emerald-500 hover:bg-emerald-600 active:bg-emerald-700 text-white font-bold rounded-2xl shadow-md flex items-center justify-center space-x-2 transition transform active:scale-95 border-b-4 border-emerald-700">
+            <span class="text-xl">🍃</span>
+            <span class="text-xs md:text-sm">Tempel di Pohon</span>
+          </button>
+
+          <button onclick="handleDecision('TRASH')" 
+                  class="flex-1 py-3 px-4 bg-rose-500 hover:bg-rose-600 active:bg-rose-700 text-white font-bold rounded-2xl shadow-md flex items-center justify-center space-x-2 transition transform active:scale-95 border-b-4 border-rose-700">
+            <span class="text-xl">🗑️</span>
+            <span class="text-xs md:text-sm">Buang ke Sampah</span>
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+  </main>
+
+  <!-- FEEDBACK POPUP MODAL (GENTLE EDUCATIONAL EXPLANATION) -->
+  <div id="feedbackModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border-4 border-amber-400 text-center animate-pop relative">
+      <div id="feedbackIcon" class="text-5xl mb-2">💡</div>
+      <h3 id="feedbackTitle" class="font-fredoka text-xl text-slate-800 mb-2">Penjelasan Edukasi</h3>
+      <p id="feedbackText" class="text-sm text-slate-600 mb-6 font-medium leading-relaxed bg-amber-50 p-3 rounded-xl border border-amber-200">
+        Pesan penjelasan akan muncul di sini.
+      </p>
+      <button onclick="closeFeedbackModal()" class="w-full py-3 bg-amber-500 hover:bg-amber-600 text-white font-fredoka text-lg rounded-xl shadow-md transition">
+        Saya Mengerti 👍
+      </button>
+    </div>
+  </div>
+
+  <!-- END GAME / RECAP SCREEN -->
+  <div id="endScreen" class="fixed inset-0 bg-slate-900/70 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-3xl max-w-xl w-full p-6 md:p-8 shadow-2xl border-4 border-emerald-500 text-center animate-pop relative max-h-[90vh] overflow-y-auto">
+      
+      <!-- Trophy Icon & Title -->
+      <div class="inline-block p-4 bg-amber-100 rounded-full text-5xl mb-2 shadow-inner">🏆</div>
+      <h2 class="font-fredoka text-2xl md:text-3xl text-emerald-700">Permainan Selesai!</h2>
+      <p class="text-xs text-slate-500 font-semibold mb-4">Hasil Evaluasi Pembelajaran PAI SD</p>
+
+      <!-- Badge & Final Scores -->
+      <div class="bg-gradient-to-r from-emerald-500 to-teal-600 text-white p-4 rounded-2xl shadow-md mb-6">
+        <div class="text-xs uppercase tracking-wider font-bold text-emerald-100 mb-1">Gelar Penghargaan:</div>
+        <div id="finalBadge" class="font-fredoka text-2xl text-amber-300 drop-shadow mb-2">🌟 PAHLAWAN KASIH SAYANG</div>
+        
+        <div class="grid grid-cols-3 gap-2 mt-3 pt-3 border-t border-emerald-400/40 text-center text-xs md:text-sm">
+          <div>
+            <div class="text-emerald-200 font-medium">Total Skor</div>
+            <div id="finalScore" class="font-fredoka text-xl md:text-2xl text-white">120</div>
+          </div>
+          <div>
+            <div class="text-emerald-200 font-medium">Waktu</div>
+            <div id="finalTime" class="font-bold text-base md:text-lg text-white">00:45</div>
+          </div>
+          <div>
+            <div class="text-emerald-200 font-medium">Akurasi</div>
+            <div id="finalAccuracy" class="font-bold text-base md:text-lg text-amber-300">100%</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Moral Message / Surah Al-Ma'un Summary -->
+      <div class="bg-amber-50 text-left p-4 rounded-2xl border border-amber-200 mb-6">
+        <h4 class="font-bold text-amber-900 text-sm flex items-center mb-1">
+          <span class="mr-1.5">📖</span> Pesan Moral (Al-Qur'an):
+        </h4>
+        <p class="text-xs text-amber-800 leading-relaxed italic mb-2">
+          "Tahukah kamu orang yang mendustakan agama? Itulah orang yang menghardik anak yatim..." (QS. Al-Ma'un: 1-2)
+        </p>
+        <p class="text-xs text-slate-700 font-medium leading-relaxed">
+          Nabi Muhammad SAW berpesan bahwa orang yang menyayangi dan memelihara anak yatim akan berada di surga dekat dengan Beliau seperti dekatnya jari telunjuk dan jari tengah. Mari hiasi hidup kita dengan selalu menyayangi mereka! 🤲✨
+        </p>
+      </div>
+
+      <!-- Footer Buttons -->
+      <div class="flex flex-col sm:flex-row gap-3">
+        <button onclick="restartGame()" class="flex-1 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-fredoka rounded-xl shadow-md transition">
+          🔄 Main Lagi
+        </button>
+        <button onclick="printResults()" class="flex-1 py-3 bg-slate-700 hover:bg-slate-800 text-white font-fredoka rounded-xl shadow-md transition">
+          🖨️ Cetak / Simpan Ringkasan
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- BOTTOM FOOTER -->
+  <footer class="bg-slate-100 border-t border-slate-200 py-2.5 text-center text-xs text-slate-500 font-medium">
+    Media Pembelajaran PAI SD Kelas 4 • Materi Menyayangi Anak Yatim
+  </footer>
+
+  <!-- GAME LOGIC SCRIPT -->
+  <script>
+    /* ==========================================
+       DATA & ACTION CARDS (Materi PAI Kelas 4)
+       ========================================== */
+    const ACTION_CARDS = [
+      // GOOD ACTIONS (BAIK)
+      { id: 1, text: "Menyantuni & memberikan sedekah kepada anak yatim", type: "GOOD", reason: "Menyantuni anak yatim adalah amalan mulia yang sangat dicintai Allah SWT." },
+      { id: 2, text: "Mengajak anak yatim bermain bersama dengan gembira", type: "GOOD", reason: "Membuat anak yatim bahagia dan tidak merasa sendirian adalah bentuk kasih sayang." },
+      { id: 3, text: "Berbagi makanan dan bekal sekolah secara ikhlas", type: "GOOD", reason: "Berbagi rezeki dengan anak yatim mendatangkan keberkahan." },
+      { id: 4, text: "Menyapa dengan senyuman ramah dan sopan", type: "GOOD", reason: "Senyum tulus dan sapaan ramah membuat hati anak yatim merasa dihargai." },
+      { id: 5, text: "Membantu membelikan alat tulis dan buku sekolah", type: "GOOD", reason: "Mendukung pendidikan anak yatim pahalanya terus mengalir." },
+      { id: 6, text: "Mendoakan kebaikan dan kesehatan bagi anak yatim", type: "GOOD", reason: "Doa kebaikan untuk sesama muslim adalah perbuatan yang sangat terpuji." },
+      
+      // BAD ACTIONS (BURUK / MENGHARDIK)
+      { id: 7, text: "Mengejek dan menghina teman yang anak yatim", type: "BAD", reason: "Mengejek dan merendahkan anak yatim adalah perbuatan tercela yang dilarang agama." },
+      { id: 8, text: "Menghardik dan membentak dengan kata-kata kasar", type: "BAD", reason: "Dalam Surah Al-Ma'un, orang yang menghardik anak yatim tersebut mendustakan agama." },
+      { id: 9, text: "Pelit dan enggan berbagi rezeki saat mampu", type: "BAD", reason: "Sikap pelit dan tidak peduli pada anak yatim melukai perasaan mereka." },
+      { id: 10, text: "Menjauhi dan mengucilkan saat bermain di sekolah", type: "BAD", reason: "Mengucilkan teman yatim membuat mereka sedih dan kesepian." },
+      { id: 11, text: "Mengambil barang atau hak anak yatim tanpa izin", type: "BAD", reason: "Memakan atau mengambil hak anak yatim adalah dosa besar." },
+      { id: 12, text: "Acuh tak acuh dan tidak peduli ketika mereka butuh bantuan", type: "BAD", reason: "Mementingkan diri sendiri tanpa peduli sesama adalah sikap tidak terpuji." }
+    ];
+
+    // Leaf positioning predefined coordinates for realistic tree visualization
+    const LEAF_POSITIONS = [
+      { top: '25%', left: '35%', rotate: '-10deg' },
+      { top: '20%', left: '55%', rotate: '15deg' },
+      { top: '38%', left: '25%', rotate: '-25deg' },
+      { top: '35%', left: '68%', rotate: '20deg' },
+      { top: '50%', left: '32%', rotate: '5deg' },
+      { top: '48%', left: '58%', rotate: '-15deg' },
+      { top: '15%', left: '45%', rotate: '0deg' },
+      { top: '30%', left: '46%', rotate: '12deg' },
+      { top: '55%', left: '45%', rotate: '-8deg' },
+      { top: '40%', left: '40%', rotate: '18deg' }
+    ];
+
+    /* ==========================================
+       GAME STATE MANAGEMENT
+       ========================================== */
+    let currentTeamName = "Tim Kasih";
+    let score = 0;
+    let timerSeconds = 120;
+    let timerInterval = null;
+    let remainingCards = [];
+    let activeCardIndex = 0;
+    let goodLeavesCount = 0;
+    let totalAttempts = 0;
+    let correctAttempts = 0;
+
+    /* Web Audio Synthesizer Effects */
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+    function playSound(type) {
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+
+      if (type === 'good') {
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(523.25, audioCtx.currentTime); // C5
+        osc.frequency.exponentialRampToValueAtTime(880, audioCtx.currentTime + 0.2); // A5
+        gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.3);
+      } else if (type === 'trash') {
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(300, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(120, audioCtx.currentTime + 0.2);
+        gain.gain.setValueAtTime(0.25, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.25);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.25);
+      } else if (type === 'error') {
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(200, audioCtx.currentTime);
+        osc.frequency.setValueAtTime(140, audioCtx.currentTime + 0.15);
+        gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.3);
+      }
+    }
+
+    /* ==========================================
+       INITIALIZATION & FLOW CONTROL
+       ========================================== */
+    function selectPresetTeam(name) {
+      document.getElementById('inputTeamName').value = name;
+    }
+
+    function startGame() {
+      const customName = document.getElementById('inputTeamName').value.trim();
+      currentTeamName = customName !== "" ? customName : "Tim Kasih";
+      document.getElementById('displayTeamName').innerText = currentTeamName;
+      document.getElementById('teamBadge').classList.remove('hidden');
+
+      // Reset State
+      score = 0;
+      timerSeconds = 120;
+      goodLeavesCount = 0;
+      totalAttempts = 0;
+      correctAttempts = 0;
+      
+      // Shuffle Cards
+      remainingCards = [...ACTION_CARDS].sort(() => Math.random() - 0.5);
+      activeCardIndex = 0;
+
+      // Reset UI elements
+      document.getElementById('scoreDisplay').innerText = score;
+      document.getElementById('attachedLeavesContainer').innerHTML = '';
+      document.getElementById('leafCounter').innerText = `0/10 Daun`;
+
+      // Hide start screen
+      document.getElementById('startScreen').classList.add('hidden');
+
+      // Render First Card & Setup Events
+      renderActiveCard();
+      setupDragAndDrop();
+
+      // Start Timer
+      clearInterval(timerInterval);
+      updateTimerDisplay();
+      timerInterval = setInterval(() => {
+        timerSeconds--;
+        updateTimerDisplay();
+        if (timerSeconds <= 0) {
+          endGame();
+        }
+      }, 1000);
+    }
+
+    function updateTimerDisplay() {
+      const mins = Math.floor(timerSeconds / 60);
+      const secs = timerSeconds % 60;
+      document.getElementById('timerDisplay').innerText = 
+        `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    }
+
+    function renderActiveCard() {
+      const cardElement = document.getElementById('activeCard');
+      const textElement = document.getElementById('cardText');
+      const leftCountElement = document.getElementById('cardsLeftCount');
+
+      if (activeCardIndex >= remainingCards.length) {
+        endGame();
+        return;
+      }
+
+      const currentCard = remainingCards[activeCardIndex];
+      textElement.innerText = `"${currentCard.text}"`;
+      leftCountElement.innerText = remainingCards.length - activeCardIndex;
+
+      // Reset Animation
+      cardElement.classList.remove('animate-pop');
+      void cardElement.offsetWidth; // Trigger reflow
+      cardElement.classList.add('animate-pop');
+    }
+
+    /* ==========================================
+       CORE GAME MECHANICS (DECISION HANDLING)
+       ========================================== */
+    function handleDecision(target) {
+      if (activeCardIndex >= remainingCards.length) return;
+
+      const card = remainingCards[activeCardIndex];
+      totalAttempts++;
+
+      const isCorrect = (target === 'TREE' && card.type === 'GOOD') || 
+                        (target === 'TRASH' && card.type === 'BAD');
+
+      if (isCorrect) {
+        correctAttempts++;
+        score += 10;
+        document.getElementById('scoreDisplay').innerText = score;
+
+        if (target === 'TREE') {
+          playSound('good');
+          attachLeafToTree(card.text);
+          triggerTreeGlow();
+        } else {
+          playSound('trash');
+          triggerTrashAnimation();
+        }
+
+        activeCardIndex++;
+        renderActiveCard();
+
+      } else {
+        // Incorrect decision -> Educational Pop-up
+        playSound('error');
+        score = Math.max(0, score - 5); // Subtract 5 points, minimum 0
+        document.getElementById('scoreDisplay').innerText = score;
+
+        showFeedbackModal(card, target);
+      }
+    }
+
+    function attachLeafToTree(text) {
+      const container = document.getElementById('attachedLeavesContainer');
+      const posIndex = goodLeavesCount % LEAF_POSITIONS.length;
+      const pos = LEAF_POSITIONS[posIndex];
+      goodLeavesCount++;
+
+      const leafNode = document.createElement('div');
+      leafNode.className = 'absolute pointer-events-auto transform transition duration-300 hover:scale-125 cursor-pointer flex items-center justify-center animate-pop';
+      leafNode.style.top = pos.top;
+      leafNode.style.left = pos.left;
+      leafNode.style.transform = `rotate(${pos.rotate})`;
+      leafNode.title = text;
+
+      leafNode.innerHTML = `
+        <div class="relative flex items-center justify-center">
+          <span class="text-3xl md:text-4xl leaf-glow">🍃</span>
+          <span class="absolute text-[9px] font-bold text-emerald-950 bg-white/90 px-1.5 py-0.5 rounded-full shadow border border-emerald-300 max-w-[70px] truncate">
+            ${text.split(' ')[0]}
+          </span>
+        </div>
+      `;
+
+      container.appendChild(leafNode);
+      document.getElementById('leafCounter').innerText = `${goodLeavesCount} Daun`;
+    }
+
+    function triggerTreeGlow() {
+      const treeZone = document.getElementById('treeDropZone');
+      treeZone.classList.add('ring-4', 'ring-emerald-400', 'bg-emerald-200/40');
+      setTimeout(() => {
+        treeZone.classList.remove('ring-4', 'ring-emerald-400', 'bg-emerald-200/40');
+      }, 400);
+    }
+
+    function triggerTrashAnimation() {
+      const trashCan = document.getElementById('trashCanIcon');
+      const trashZone = document.getElementById('trashDropZone');
+
+      trashCan.classList.add('scale-125', 'rotate-12');
+      trashZone.classList.add('trash-glow');
+
+      setTimeout(() => {
+        trashCan.classList.remove('scale-125', 'rotate-12');
+        trashZone.classList.remove('trash-glow');
+      }, 400);
+    }
+
+    /* ==========================================
+       FEEDBACK MODAL FOR WRONG CHOICES
+       ========================================== */
+    function showFeedbackModal(card, targetAttempt) {
+      const modal = document.getElementById('feedbackModal');
+      const title = document.getElementById('feedbackTitle');
+      const text = document.getElementById('feedbackText');
+      const icon = document.getElementById('feedbackIcon');
+
+      if (card.type === 'GOOD' && targetAttempt === 'TRASH') {
+        icon.innerText = "🍃";
+        title.innerText = "Ini Adalah Sikap Terpuji!";
+        text.innerText = `Tindakan "${card.text}" adalah perbuatan BAIK menyayangi anak yatim. Seharusnya ditempelkan di Pohon Kebaikan!`;
+      } else {
+        icon.innerText = "⚠️";
+        title.innerText = "Perbuatan Ini Harus Dibuang!";
+        text.innerText = `Tindakan "${card.text}" adalah sikap TERCELA/MENGHARDIK. Ingat, sikap buruk harus dibuang ke Tong Sampah!`;
+      }
+
+      modal.classList.remove('hidden');
+    }
+
+    function closeFeedbackModal() {
+      document.getElementById('feedbackModal').classList.add('hidden');
+      // Player retries current card
+    }
+
+    /* ==========================================
+       DRAG AND DROP HANDLERS (DESKTOP USER FRIENDLY)
+       ========================================== */
+    function setupDragAndDrop() {
+      const activeCard = document.getElementById('activeCard');
+      const treeZone = document.getElementById('treeDropZone');
+      const trashZone = document.getElementById('trashDropZone');
+
+      activeCard.addEventListener('dragstart', (e) => {
+        e.dataTransfer.setData('text/plain', 'CARD');
+        activeCard.classList.add('opacity-50', 'scale-95');
+      });
+
+      activeCard.addEventListener('dragend', () => {
+        activeCard.classList.remove('opacity-50', 'scale-95');
+      });
+
+      // Tree Drop zone
+      treeZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        treeZone.classList.add('border-emerald-600', 'bg-emerald-200/50');
+      });
+      treeZone.addEventListener('dragleave', () => {
+        treeZone.classList.remove('border-emerald-600', 'bg-emerald-200/50');
+      });
+      treeZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        treeZone.classList.remove('border-emerald-600', 'bg-emerald-200/50');
+        handleDecision('TREE');
+      });
+
+      // Trash Drop zone
+      trashZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        trashZone.classList.add('border-rose-600', 'bg-rose-200/50');
+      });
+      trashZone.addEventListener('dragleave', () => {
+        trashZone.classList.remove('border-rose-600', 'bg-rose-200/50');
+      });
+      trashZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        trashZone.classList.remove('border-rose-600', 'bg-rose-200/50');
+        handleDecision('TRASH');
+      });
+    }
+
+    /* ==========================================
+       END GAME & SUMMARY SCREEN
+       ========================================== */
+    function endGame() {
+      clearInterval(timerInterval);
+
+      const timeTakenSecs = 120 - timerSeconds;
+      const mins = Math.floor(timeTakenSecs / 60);
+      const secs = timeTakenSecs % 60;
+      const timeFormatted = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+
+      const accuracy = totalAttempts > 0 ? Math.round((correctAttempts / totalAttempts) * 100) : 100;
+
+      // Assign Badge based on accuracy and score
+      let badgeText = "🌟 PAHLAWAN KASIH SAYANG";
+      if (score < 80) badgeText = "🌱 SAHABAT KEBAIKAN";
+      if (score >= 100 && accuracy === 100) badgeText = "👑 BINTANG EMPATI UTAMA";
+
+      document.getElementById('finalScore').innerText = score;
+      document.getElementById('finalTime').innerText = timeFormatted;
+      document.getElementById('finalAccuracy').innerText = `${accuracy}%`;
+      document.getElementById('finalBadge').innerText = badgeText;
+
+      document.getElementById('endScreen').classList.remove('hidden');
+    }
+
+    function restartGame() {
+      document.getElementById('endScreen').classList.add('hidden');
+      document.getElementById('startScreen').classList.remove('hidden');
+    }
+
+    function printResults() {
+      window.print();
+    }
+  </script>
+</body>
+</html>
